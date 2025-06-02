@@ -65,6 +65,7 @@ class _FlexExpansionTileState extends State<FlexExpansionTile>
                 : null,
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           ListTile(
             title: widget.title,
@@ -73,23 +74,26 @@ class _FlexExpansionTileState extends State<FlexExpansionTile>
               widget.onExpansionChanged?.call(_isExpanded);
             },
           ),
-          AnimatedCrossFade(
-            firstChild: const SizedBox.shrink(),
-            secondChild: Column(
-              children:
-                  widget.children.map((child) {
-                    return GestureDetector(
-                      behavior: HitTestBehavior.translucent,
-                      onTap: widget.onChildInteraction,
-                      child: child,
-                    );
-                  }).toList(),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeInOut,
+            alignment: Alignment.topCenter,
+            child: ConstrainedBox(
+              constraints:
+                  _isExpanded
+                      ? const BoxConstraints()
+                      : const BoxConstraints(maxHeight: 0),
+              child: Column(
+                children:
+                    widget.children.map((child) {
+                      return GestureDetector(
+                        behavior: HitTestBehavior.translucent,
+                        onTap: widget.onChildInteraction,
+                        child: child,
+                      );
+                    }).toList(),
+              ),
             ),
-            crossFadeState:
-                _isExpanded
-                    ? CrossFadeState.showSecond
-                    : CrossFadeState.showFirst,
-            duration: const Duration(milliseconds: 200),
           ),
         ],
       ),
