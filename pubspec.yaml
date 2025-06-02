@@ -1,7 +1,7 @@
 name: flex_expansion_tile
 description: " A flexible, customizable, and efficient expansion tile widget."
 version: 0.0.1
-homepage:
+homepage: https://github.com/raval5114/flex_expansion_tile
 
 environment:
   sdk: ^3.7.2
