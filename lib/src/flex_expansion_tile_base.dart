@@ -17,7 +17,7 @@ class FlexExpansionTile extends StatefulWidget {
 
   const FlexExpansionTile({
     required this.title,
-    this.children = const <Widget>[],
+    required this.children,
     this.initiallyExpanded = false,
     this.onExpansionChanged,
     this.onChildInteraction,
