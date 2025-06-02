@@ -37,45 +37,38 @@ class FlexExpansionTile extends StatefulWidget {
 class _FlexExpansionTileState extends State<FlexExpansionTile>
     with SingleTickerProviderStateMixin {
   late bool _isExpanded;
-  late AnimationController _controller;
-  late Animation<double> _iconTurns;
+  late AnimationController _iconRotationController;
 
   @override
   void initState() {
     super.initState();
     _isExpanded = widget.initiallyExpanded;
-
-    _controller = AnimationController(
+    _iconRotationController = AnimationController(
       duration: const Duration(milliseconds: 200),
       vsync: this,
+      value: _isExpanded ? 0.5 : 0.0,
     );
-
-    _iconTurns = Tween<double>(begin: 0.0, end: 0.5).animate(_controller);
-
-    if (_isExpanded) _controller.value = 0.5;
   }
 
-  void _handleExpansion(bool expanded) {
+  void _toggleExpansion() {
     setState(() {
-      _isExpanded = expanded;
-      if (_isExpanded) {
-        _controller.forward();
-      } else {
-        _controller.reverse();
-      }
+      _isExpanded = !_isExpanded;
+      _isExpanded
+          ? _iconRotationController.forward()
+          : _iconRotationController.reverse();
     });
-    widget.onExpansionChanged?.call(expanded);
+    widget.onExpansionChanged?.call(_isExpanded);
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _iconRotationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final container = Container(
+    return Container(
       margin: widget.margin,
       padding: widget.padding,
       decoration: BoxDecoration(
@@ -93,31 +86,47 @@ class _FlexExpansionTileState extends State<FlexExpansionTile>
                 ]
                 : null,
       ),
-      child: Theme(
-        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-        child: ExpansionTile(
-          tilePadding: EdgeInsets.zero,
-          title: widget.title,
-          initiallyExpanded: widget.initiallyExpanded,
-          onExpansionChanged: _handleExpansion,
-          trailing: RotationTransition(
-            turns: _iconTurns,
-            child: const Icon(Icons.arrow_drop_down),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          InkWell(
+            onTap: _toggleExpansion,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(child: widget.title),
+                RotationTransition(
+                  turns: Tween<double>(
+                    begin: 0.0,
+                    end: 0.5,
+                  ).animate(_iconRotationController),
+                  child: const Icon(Icons.arrow_drop_down),
+                ),
+              ],
+            ),
           ),
-          children:
-              widget.children
-                  .map(
-                    (child) => GestureDetector(
-                      behavior: HitTestBehavior.translucent,
-                      onTap: widget.onChildInteraction,
-                      child: child,
-                    ),
-                  )
-                  .toList(),
-        ),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeInOut,
+            child: ConstrainedBox(
+              constraints:
+                  _isExpanded
+                      ? const BoxConstraints()
+                      : const BoxConstraints(maxHeight: 0.0),
+              child: Column(
+                children:
+                    widget.children.map((child) {
+                      return GestureDetector(
+                        behavior: HitTestBehavior.translucent,
+                        onTap: widget.onChildInteraction,
+                        child: child,
+                      );
+                    }).toList(),
+              ),
+            ),
+          ),
+        ],
       ),
     );
-
-    return container;
   }
 }
